@@ -32,14 +32,26 @@ void Course::removeStudent(int studentId)
 		cout << "No students enrolled in this course." << endl;
 		return;
 	}
-	for (int i=0;i<enrolledStudents.size();i++)
+	/*for (int i = 0; i<enrolledStudents.size(); i++)
 	{
 		if (enrolledStudents[i]->getId() == studentId)
 		{
 			enrolledStudents.erase(enrolledStudents.begin() + i);
 			break;
 		}
-	}
+	}*/
+    auto it = std::find_if(
+        enrolledStudents.begin(),
+        enrolledStudents.end(),
+        [studentId](Student* s)
+        {
+            return s->getId() == studentId;
+        });
+
+    if (it != enrolledStudents.end())
+    {
+        enrolledStudents.erase(it);
+    }
 }
 bool Course::isFull() const
 {
