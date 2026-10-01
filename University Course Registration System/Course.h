@@ -19,5 +19,4 @@ public:
 	bool isFull()const;
 	int getCourseCode()const;
 	string getCourseName()const;
-
 };
