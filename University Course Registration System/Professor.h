@@ -15,5 +15,4 @@ public:
 	void displayInfo() const override;
 	void displayCourses() const;
     bool havingCourse(int courseCode) override;
-
 };
