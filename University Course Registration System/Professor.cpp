@@ -1,13 +1,11 @@
-#include "Professor.h"
-#include "Course.h"
 #include <iostream>
 #include<string>
+#include "Professor.h"
+#include "Course.h"
 using namespace std;
-
-Professor::Professor(int id, string name, string email, int departmentId, string specialization) :Person(id, name, email)
+Professor::Professor(int id, string name, string email, int departmentId, string specialization) :Person(id, name, email),
+    departmentId(departmentId), specialization(specialization)
 {
-	this->departmentId = departmentId;
-	this->specialization = specialization;
 }
 void Professor::addCourse(Course *newCourse)
 {
@@ -18,15 +16,14 @@ void Professor::addCourse(Course *newCourse)
 	}
 	courses.push_back(newCourse);
 }
-void Professor::displayInfo()
+void Professor::displayInfo() const
 {
-	cout << "Professor ID: " << getId() << endl;
-	cout << "Name: " << getName() << endl;
-	//cout << "Email: " << getEmail() << endl;
-	cout << "Department ID: " << departmentId << endl;
-	cout << "Specialization: " << specialization << endl;
+	cout << "Professor ID: " << getId() << endl
+	     << "Name: " << getName() << endl
+	     << "Department ID: " << departmentId << endl
+	     << "Specialization: " << specialization << endl;
 }	
-void Professor::displayCourses()
+void Professor::displayCourses() const
 {
 	if (courses.empty())
 	{

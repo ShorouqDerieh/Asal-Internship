@@ -1,6 +1,3 @@
-// University Course Registration System.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include<vector>
 #include<string>
@@ -28,10 +25,6 @@ int main()
 	p3.addCourse(courses[2]);
 	p1.registerCourse(courses[0]);
 	p2.registerCourse(courses[1]);
-	//persons[0]->displayInfo();
-	//persons[2]->displayInfo();
-	//courses[0]->displayCourseInfo();
-
 	cout << "================================" << endl << "COURSES INFORMATION" << endl<<endl;
 	for (Course* course : courses)
 	{
@@ -62,6 +55,8 @@ int main()
 	p1.registerCourse(courses[0]);
 	p1.registerCourse(courses[1]);
 	p2.dropCourse(102);
-
-
+    for (Course* course : courses)
+    {
+        delete course;
+    }
 }

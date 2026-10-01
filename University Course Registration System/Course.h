@@ -1,9 +1,9 @@
 #include<string>
 #include<vector>
-//#include "Student.h"
 class Student;
 using namespace std;
-class Course {
+class Course
+{
 private:
 	int courseCode;
 	string courseName;
@@ -13,11 +13,11 @@ private:
 	
 public:
 	Course(int code, string name, int hours, int maxStudents);
-	void displayCourseInfo();
+	void displayCourseInfo() const;
 	void addStudent(Student *newStudent);
 	void removeStudent(int studentId);
-	bool isFull();
-	int getCourseCode();
-	string getCourseName();
+	bool isFull()const;
+	int getCourseCode()const;
+	string getCourseName()const;
 
 };

@@ -1,9 +1,8 @@
 #pragma once
-#include "Person.h"
-//#include "Course.h"
-class Course;
 #include<vector>
 #include<string>
+#include "Person.h"
+class Course;
 class Professor:public Person
 {
 private:
@@ -13,8 +12,8 @@ private:
 public:
 	Professor(int id, string name, string email, int departmentId, string specialization);
 	void addCourse(Course *newCourse);
-	void displayInfo() override;
-	void displayCourses();
-	bool havingCourse(int courseCode) override;
+	void displayInfo() const override;
+	void displayCourses() const;
+    bool havingCourse(int courseCode) override;
 
 };

@@ -2,25 +2,26 @@
 #include<iostream>
 #include "Student.h"
 using namespace std;
-Course::Course(int code, string name, int hours, int maxStudents) {
-	courseCode = code;
-	courseName = name;
-	creditHours = hours;
-	this->maxStudents = maxStudents;
+Course::Course(int code, string name, int hours, int maxStudents):
+	courseCode(code), courseName(name), creditHours(hours), maxStudents(maxStudents)
+{
 }
-void Course::displayCourseInfo(){
-	cout << "Course Code: "<<courseCode<<endl;
-	cout << "Course Name: "<<courseName<<endl;
-	cout << "Credit Hours: "<<creditHours<<endl;
-	cout << "Maximum Students: "<<maxStudents<<endl;
-	cout << "Available Seats: " << maxStudents - enrolledStudents.size() << endl;
+void Course::displayCourseInfo() const
+{
+	cout << "Course Code: "<<courseCode<<endl
+	     << "Course Name: "<<courseName<<endl
+	     << "Credit Hours: "<<creditHours<<endl
+	     << "Maximum Students: "<<maxStudents<<endl
+	     << "Available Seats: " << maxStudents - enrolledStudents.size() << endl;
 }
-void Course::addStudent(Student *newStudent) {
+void Course::addStudent(Student *newStudent)
+{
 	if (!isFull())
 	{
 		enrolledStudents.push_back(newStudent);
 	}
-	else {
+	else
+    {
 		cout << "Cannot add student. Course is full." << endl;
 	}
 }
@@ -36,17 +37,19 @@ void Course::removeStudent(int studentId)
 		if (enrolledStudents[i]->getId() == studentId)
 		{
 			enrolledStudents.erase(enrolledStudents.begin() + i);
-			//cout << "Student removed from the course." << endl;
 			break;
 		}
 	}
 }
-bool Course::isFull() {
+bool Course::isFull() const
+{
 	return enrolledStudents.size() >= maxStudents;
 }
-int  Course::getCourseCode() {
+int  Course::getCourseCode() const
+{
 	return courseCode;
 }
-string  Course::getCourseName() {
+string  Course::getCourseName() const
+{
 	return courseName;
 }

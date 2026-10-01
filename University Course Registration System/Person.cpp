@@ -2,23 +2,24 @@
 #include <iostream>
 #include<string>
 using namespace std;
-
-Person::Person(int id, string name, string email) {
-	this->id = id;
-	this->name = name;
-	this->email = email;
+Person::Person(int id, string name, string email):
+    id(id), name(name), email(email)
+{
 }
-void Person::displayInfo() {
-	cout << "Name: " << name << endl;
-	cout << "ID: " << id << endl;
-	cout << "Email: " << email << endl;
+void Person::displayInfo() const{
+	cout << "Name: " << name << endl
+	     <<"ID: " << id << endl
+	     <<"Email: " << email << endl;
 }
-int Person::getId() {
+int Person::getId() const
+{
 	return id;
 }
-string Person::getName() {
+string Person::getName() const
+{
 	return name;
 }
-string Person::getEmail() {
+string Person::getEmail() const
+{
 	return email;
 }

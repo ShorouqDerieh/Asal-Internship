@@ -1,13 +1,10 @@
-#include "Student.h"
-#include "Course.h"
 #include<iostream>
 #include<string>
+#include "Student.h"
+#include "Course.h"
 using namespace std;
-
-Student::Student(int id, string name, string email, string major, double gpa) :Person(id, name, email)
+Student::Student(int id, string name, string email, string major, double gpa) :Person(id, name, email),major(major), gpa(gpa)
 {
-	this->major = major;
-	this->gpa = gpa;
 }
 void Student::registerCourse(Course *newCourse)
 {
@@ -38,15 +35,15 @@ void Student::dropCourse(int CourseCode)
 		}
 	}
 }
-void Student::displayInfo()
+void Student::displayInfo() const
 {
-	cout << "Student ID: " << getId() << endl;
-	cout << "Name: " << getName() << endl;
-	cout << "Email: " << getEmail() << endl;
-	cout << "Major: " << major << endl;
-	cout << "GPA: " << gpa << endl;
+	cout << "Student ID: " << getId() << endl
+	     << "Name: " << getName() << endl
+	     << "Email: " << getEmail() << endl
+	     << "Major: " << major << endl
+	     << "GPA: " << gpa << endl;
 }
-void Student::displayRegisteredCourses()
+void Student::displayRegisteredCourses() const
 {
 	if (enrolledCourses.empty())
 	{
