@@ -6,7 +6,12 @@
 #include<random>
 #include "account.h"
 #include "bank.h"
-void runATM(std::vector<Account*>& accounts, Bank& bank,int id)
+#include "ATMContext.h"
+#include "DepositStrategy.h"
+#include"TransferStrategy.h"
+#include "WithdrawStrategy.h"
+#include "CheckBalanceStrategy.h"
+void runATM(std::vector<Account*>& accounts, Bank& bank, int id)
 {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -14,7 +19,7 @@ void runATM(std::vector<Account*>& accounts, Bank& bank,int id)
     std::uniform_int_distribution<int> operationDist(0, 3);
     std::uniform_int_distribution<int> accountDist(0, accounts.size() - 1);
     std::uniform_int_distribution<int> amountDist(10, 100);
-
+    ATMContext atm(std::make_unique<DepositStrategy>());
     for (int i = 0; i < 10; i++)
     {
         int operation = operationDist(gen);
@@ -22,15 +27,15 @@ void runATM(std::vector<Account*>& accounts, Bank& bank,int id)
         double amount = amountDist(gen);
 
         Account& account = *accounts[accountIndex];
-
+        OperationContext context{ account, bank, amount, nullptr };
         switch (operation)
         {
         case 0:
-            account.deposit(amount, bank);
+            atm.setStrategy(std::make_unique<DepositStrategy>());
             break;
 
         case 1:
-            account.withdraw(amount, bank);
+            atm.setStrategy(std::make_unique<WithdrawStrategy>());
             break;
 
         case 2:
@@ -40,15 +45,16 @@ void runATM(std::vector<Account*>& accounts, Bank& bank,int id)
             do {
                 toIndex = accountDist(gen);
             } while (toIndex == accountIndex);
-
-            account.transfer(*accounts[toIndex], amount, bank);
+            context.destination = accounts[toIndex];
+            atm.setStrategy(std::make_unique<TransferStrategy>());
             break;
         }
 
         case 3:
-            account.checkBalance();
+            atm.setStrategy(std::make_unique<CheckBalanceStrategy>());
             break;
         }
+        atm.operate(context);
     }
 
 }
@@ -66,7 +72,7 @@ int main()
 
     for (int i = 1; i <= 10; i++)
     {
-        threads.emplace_back(runATM, std::ref(accounts), std::ref(bank),i);
+        threads.emplace_back(runATM, std::ref(accounts), std::ref(bank), i);
     }
     for (std::thread& t : threads)
     {
@@ -99,7 +105,7 @@ int main()
 
     auto future2 = std::async(
         std::launch::async,
-        &Account:: generateStatement,
+        &Account::generateStatement,
         &account2
     );
 
