@@ -30,34 +30,48 @@ void runATM(std::vector<Account*>& accounts, Bank& bank, int id)
         OperationContext context{ account, bank, amount, nullptr };
         switch (operation)
         {
-        case 0:
-            atm.setStrategy(std::make_unique<DepositStrategy>());
-            break;
+            case 0:
+                atm.setStrategy(std::make_unique<DepositStrategy>());
+                break;
 
-        case 1:
-            atm.setStrategy(std::make_unique<WithdrawStrategy>());
-            break;
+            case 1:
+                atm.setStrategy(std::make_unique<WithdrawStrategy>());
+                break;
 
-        case 2:
-        {
-            int toIndex;
+            case 2:
+            {
+                int toIndex;
+                do
+                {
+                    toIndex = accountDist(gen);
+                } while (toIndex == accountIndex);
+                context.destination = accounts[toIndex];
+                atm.setStrategy(std::make_unique<TransferStrategy>());
+                break;
+            }
 
-            do {
-                toIndex = accountDist(gen);
-            } while (toIndex == accountIndex);
-            context.destination = accounts[toIndex];
-            atm.setStrategy(std::make_unique<TransferStrategy>());
-            break;
-        }
-
-        case 3:
-            atm.setStrategy(std::make_unique<CheckBalanceStrategy>());
-            break;
+            case 3:
+                atm.setStrategy(std::make_unique<CheckBalanceStrategy>());
+                break;
         }
         atm.operate(context);
     }
 
 }
+void ShowStatistics(const Bank& bank)
+{
+    std::cout << "\n===== Statistics =====\n"<<
+                        "Total Deposits: "
+            << bank.getTotalDeposits() << std::endl
+
+            << "Total Withdrawals: "
+            << bank.getTotalWithdrawals() << std::endl
+
+            << "Total Transfers: "
+            << bank.getTotalTransfers() << std::endl;
+
+}
+
 int main()
 {
     Bank bank;
@@ -83,18 +97,7 @@ int main()
     account1.checkBalance();
     account2.checkBalance();
     account3.checkBalance();
-
-    std::cout << "\n===== Statistics =====\n";
-
-    std::cout << "Total Deposits: "
-        << bank.getTotalDeposits() << std::endl;
-
-    std::cout << "Total Withdrawals: "
-        << bank.getTotalWithdrawals() << std::endl;
-
-    std::cout << "Total Transfers: "
-        << bank.getTotalTransfers() << std::endl;
-
+    ShowStatistics(bank);
     std::cout << "\n===== Account Statements =====\n";
 
     auto future1 = std::async(
@@ -115,9 +118,9 @@ int main()
         &account3
     );
 
-    std::cout << future1.get() << std::endl;
-    std::cout << future2.get() << std::endl;
-    std::cout << future3.get() << std::endl;
+    std::cout << future1.get() << std::endl
+                << future2.get() << std::endl
+                << future3.get() << std::endl;
 
     return 0;
 }
