@@ -25,33 +25,48 @@ void runATM(std::vector<Account*>& accounts, Bank& bank,int id)
 
         switch (operation)
         {
-        case 0:
-            account.deposit(amount, bank);
-            break;
+            case 0:
+                account.deposit(amount, bank);
+                break;
 
-        case 1:
-            account.withdraw(amount, bank);
-            break;
+            case 1:
+                account.withdraw(amount, bank);
+                break;
 
-        case 2:
-        {
-            int toIndex;
+            case 2:
+            {
+                int toIndex;
 
-            do {
-                toIndex = accountDist(gen);
-            } while (toIndex == accountIndex);
+                do 
+                {
+                    toIndex = accountDist(gen);
+                } while (toIndex == accountIndex);
 
-            account.transfer(*accounts[toIndex], amount, bank);
-            break;
-        }
+                account.transfer(*accounts[toIndex], amount, bank);
+                break;
+            }
 
-        case 3:
-            account.checkBalance();
-            break;
+            case 3:
+                account.checkBalance();
+                break;
         }
     }
 
 }
+void ShowStatistics()
+{
+    std::cout << "\n===== Statistics =====\n"<<
+                        "Total Deposits: "
+            << bank.getTotalDeposits() << std::endl
+
+            << "Total Withdrawals: "
+            << bank.getTotalWithdrawals() << std::endl
+
+            << "Total Transfers: "
+            << bank.getTotalTransfers() << std::endl;
+
+}
+
 int main()
 {
     Bank bank;
@@ -77,17 +92,8 @@ int main()
     account1.checkBalance();
     account2.checkBalance();
     account3.checkBalance();
-
-    std::cout << "\n===== Statistics =====\n";
-
-    std::cout << "Total Deposits: "
-        << bank.getTotalDeposits() << std::endl;
-
-    std::cout << "Total Withdrawals: "
-        << bank.getTotalWithdrawals() << std::endl;
-
-    std::cout << "Total Transfers: "
-        << bank.getTotalTransfers() << std::endl;
+    ShowStatistics();
+    
 
     std::cout << "\n===== Account Statements =====\n";
 
@@ -109,9 +115,9 @@ int main()
         &account3
     );
 
-    std::cout << future1.get() << std::endl;
-    std::cout << future2.get() << std::endl;
-    std::cout << future3.get() << std::endl;
+    std::cout << future1.get() << std::endl
+                << future2.get() << std::endl
+                << future3.get() << std::endl;
 
     return 0;
 }
