@@ -1,0 +1,127 @@
+#include <iostream>
+#include <thread>
+#include<vector>
+#include<string>
+#include<future>
+#include<random>
+#include "account.h"
+#include "bank.h"
+#include "ATMContext.h"
+#include "DepositStrategy.h"
+#include"TransferStrategy.h"
+#include "WithdrawStrategy.h"
+#include "CheckBalanceStrategy.h"
+void runATM(std::vector<Account*>& accounts, Bank& bank, int id)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::uniform_int_distribution<int> operationDist(0, 3);
+    std::uniform_int_distribution<int> accountDist(0, accounts.size() - 1);
+    std::uniform_int_distribution<int> amountDist(10, 100);
+    ATMContext atm(std::make_unique<DepositStrategy>());
+    for (int i = 0; i < 10; i++)
+    {
+        int operation = operationDist(gen);
+        int accountIndex = accountDist(gen);
+        double amount = amountDist(gen);
+
+        Account& account = *accounts[accountIndex];
+        OperationContext context{ account, bank, amount, nullptr };
+        switch (operation)
+        {
+            case 0:
+                atm.setStrategy(std::make_unique<DepositStrategy>());
+                break;
+
+            case 1:
+                atm.setStrategy(std::make_unique<WithdrawStrategy>());
+                break;
+
+            case 2:
+            {
+                int toIndex;
+                do
+                {
+                    toIndex = accountDist(gen);
+                } while (toIndex == accountIndex);
+                context.destination = accounts[toIndex];
+                atm.setStrategy(std::make_unique<TransferStrategy>());
+                break;
+            }
+
+            case 3:
+                atm.setStrategy(std::make_unique<CheckBalanceStrategy>());
+                break;
+        }
+        atm.operate(context);
+    }
+
+}
+void ShowStatistics(const Bank& bank)
+{
+    std::cout << "\n===== Statistics =====\n"<<
+                        "Total Deposits: "
+            << bank.getTotalDeposits() << std::endl
+
+            << "Total Withdrawals: "
+            << bank.getTotalWithdrawals() << std::endl
+
+            << "Total Transfers: "
+            << bank.getTotalTransfers() << std::endl;
+
+}
+
+int main()
+{
+    Bank bank;
+    std::vector<std::thread>threads;
+    std::vector<Account*>accounts;
+    Account account1(1, 1000.0);
+    Account account2(2, 500.0);
+    Account account3(3, 150.0);
+    accounts.push_back(&account1);
+    accounts.push_back(&account2);
+    accounts.push_back(&account3);
+
+    for (int i = 1; i <= 10; i++)
+    {
+        threads.emplace_back(runATM, std::ref(accounts), std::ref(bank), i);
+    }
+    for (std::thread& t : threads)
+    {
+        t.join();
+    }
+    std::cout << "\n===== Final Balances =====\n";
+
+    account1.checkBalance();
+    account2.checkBalance();
+    account3.checkBalance();
+    ShowStatistics(bank);
+    std::cout << "\n===== Account Statements =====\n";
+
+    auto future1 = std::async(
+        std::launch::async,
+        &Account::generateStatement,
+        &account1
+    );
+
+    auto future2 = std::async(
+        std::launch::async,
+        &Account::generateStatement,
+        &account2
+    );
+
+    auto future3 = std::async(
+        std::launch::async,
+        &Account::generateStatement,
+        &account3
+    );
+
+    std::cout << future1.get() << std::endl
+                << future2.get() << std::endl
+                << future3.get() << std::endl;
+
+    return 0;
+}
+
