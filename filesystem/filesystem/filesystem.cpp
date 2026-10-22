@@ -4,79 +4,104 @@
 #include <string>
 #include<limits>
 #include <vector>
+#include <cctype>
+#include <string_view>
 #include "filesystem.h"
 namespace fs = std::filesystem;
-void Filesystem::createFile(const std::string & fileName)
+void Filesystem::createFile(std::string_view fileName)
 {
     if (fs::exists(fileName))
     {
         std::cout << "File already exists.\n";
         return;
     }
-    std::ofstream file(fileName);
+
+    std::ofstream file{ std::string(fileName) };
     if (!file)
     {
         std::cout << "Failed to create file\n";
         return;
     }
+
     std::cout << "File created successfully\n";
 }
-void Filesystem::writeFile(const std::string& name, const std::string& text)
+
+void Filesystem::writeFile(std::string_view name, std::string_view text)
 {
     if (!fileExists(name))
+    {
         return;
-    std::ofstream file(name);
+    }
+
+    std::ofstream file{ std::string(name) };
     if (!file)
     {
         std::cout << "Failed to open file\n";
         return;
     }
+
     file << text;
     if (!file)
     {
         std::cout << "Failed to write to file\n";
         return;
     }
+
     std::cout << "Write to file successfully\n";
 }
-void Filesystem::appendToFile(const std::string& name, const std::string& text)
+
+void Filesystem::appendToFile(std::string_view name, std::string_view text)
 {
     if (!fileExists(name))
+    {
         return;
-    std::ofstream file(name,std::ios::app);
+    }
+
+    std::ofstream file{ std::string(name), std::ios::app };
     if (!file)
     {
         std::cout << "Failed to open file\n";
         return;
     }
+
     file << text;
     if (!file)
     {
         std::cout << "Failed to append to file\n";
         return;
     }
+
     std::cout << "Append to file successfully\n";  
 }
-void Filesystem::ReadFile(const std::string& name)
+
+void Filesystem::ReadFile(std::string_view name)
 {
     if (!fileExists(name))
+    {
         return;
+    }
+
     std::string s;
-    std::ifstream file(name, std::ios::in);
+    std::ifstream file{ std::string(name), std::ios::in };
     if (!file)
     {
         std::cout << "Failed to open file\n";
         return;
     }
+
     std::cout << "----- File Contents -----\n";
     while (std::getline(file, s))
         std::cout << s << std::endl;
     std::cout << "--------------------------\n";
 }
-void Filesystem::copyFile(const std::string& src, const std::string& dest)
+
+void Filesystem::copyFile(std::string_view src, std::string_view dest)
 {
     if (!fileExists(src))
+    {
         return;
+    }
+
     try
     {
         if (fs::copy_file(src, dest))
@@ -88,15 +113,19 @@ void Filesystem::copyFile(const std::string& src, const std::string& dest)
             std::cout << "File was not copied\n";
         }
     }
+
     catch (const fs::filesystem_error& e)
     {
         std::cout << "Copy failed: " << e.what() << '\n';
     }
 }
-void Filesystem::rename(const std::string& old, const std::string& newName)
+
+void Filesystem::rename(std::string_view old, std::string_view newName)
 {
     if (!fileExists(old))
+    {
         return;
+    }
     try
     {
        fs::rename(old, newName);
@@ -107,22 +136,27 @@ void Filesystem::rename(const std::string& old, const std::string& newName)
         std::cout << "Failed to rename file: " << e.what() << '\n';
     }
 }
-void Filesystem::deleteFile(const std::string& name)
+
+void Filesystem::deleteFile(std::string_view name)
 {
     char choice;
     std::cout << "Are you sure you want to delete " << name << "? (Y / N) :";
     std::cin >> choice;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    if (choice == 'Y'||choice=='y')
+    if (std::toupper(static_cast<unsigned char>(choice)) == 'Y')
     {
         if (!fileExists(name))
             return;
         try
         {
             if (fs::remove(name))
+            {
                 std::cout << "File removed successfully.\n";
+            }
             else
+            {
                 std::cout << "File was not removed.\n";
+            }
         }
         catch (const fs::filesystem_error& e)
         {
@@ -130,22 +164,28 @@ void Filesystem::deleteFile(const std::string& name)
         }
     }
 }
-void Filesystem::search(const std::string& name, const std::string& text)
+
+void Filesystem::search( std::string_view name, std::string_view text)
 {
     if (!fileExists(name))
+    {
         return;
+    }
+
     if (text.empty())
     {
         std::cout << "Search text cannot be empty\n";
         return;
     }
+
     std::vector<int>lines;
-    std::ifstream file(name);
+    std::ifstream file{ std::string(name) };
     if (!file)
     {
         std::cout << "Failed to open file\n";
         return;
     }
+
     int lineNumber = 0;
     std::string line;
     bool found = false;
@@ -159,6 +199,7 @@ void Filesystem::search(const std::string& name, const std::string& text)
             lines.push_back(lineNumber);
         }
     }
+
     found?std::cout << "Text Found!\n":std::cout<<"Text not found!\n";
     for (auto& num : lines)
     {
@@ -166,10 +207,13 @@ void Filesystem::search(const std::string& name, const std::string& text)
             num<<"\n";
     }
 }
-void Filesystem::displayInfo(const std::string& name)
+
+void Filesystem::displayInfo(std::string_view name)
 {
     if (!fileExists(name))
+    {
         return;
+    }
     std::cout << "Filename: " <<
         name <<"\n"<<
         "File exists: " <<
@@ -177,14 +221,16 @@ void Filesystem::displayInfo(const std::string& name)
         "File size: " <<
         fs::file_size(name)<<" bytes\n";
 }
-std::string Filesystem::getFileName(const std::string& prompt)
+
+std::string Filesystem::getFileName(std::string_view prompt)
 {
     std::string name;
     std::cout << prompt;
     std::getline(std::cin, name);
     return name;
 }
-bool Filesystem::fileExists(const std::string& name)
+
+bool Filesystem::fileExists(std::string_view name)
 {
     if (!fs::exists(name))
     {
@@ -194,6 +240,7 @@ bool Filesystem::fileExists(const std::string& name)
 
     return true;
 }
+
 void Filesystem::displayMenu() const
 {
     std::cout << "===================================\n" <<

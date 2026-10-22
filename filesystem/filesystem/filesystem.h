@@ -1,18 +1,19 @@
 #pragma once
 #include<string>
+#include <string_view>
 class Filesystem {
     public:
-    void createFile(const std::string& fileName);
-    void writeFile(const std::string& name, const std::string& text);
-    void appendToFile(const std::string& name, const std::string& text);
-    void ReadFile(const std::string& name);
-    void copyFile(const std::string& src, const std::string& dest);
-    void rename(const std::string& old, const std::string& newName);
-    void deleteFile(const std::string& name);
-    void search(const std::string& name, const std::string& text);
-    void displayInfo(const std::string& name);
+    void createFile(std::string_view fileName);
+    void writeFile(std::string_view name, std::string_view text);
+    void appendToFile(std::string_view name, std::string_view text);
+    void ReadFile(std::string_view name);
+    void copyFile(std::string_view src, std::string_view dest);
+    void rename(std::string_view old, std::string_view newName);
+    void deleteFile(std::string_view name);
+    void search(std::string_view name, std::string_view text);
+    void displayInfo(std::string_view name);
     void displayMenu()const;
-    std::string getFileName(const std::string& prompt);
+    std::string getFileName(std::string_view prompt);
     private:
-    bool fileExists(const std::string& name);
+    bool fileExists(std::string_view name);
 };

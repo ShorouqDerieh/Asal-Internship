@@ -5,6 +5,7 @@
 int main()
 {
     int choice;
+
     std::string name;
     std::string text;
     std::string secondName;
