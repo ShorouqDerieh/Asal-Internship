@@ -13,22 +13,30 @@ class Solution
     private:
     int count = 0;
     int result = 0;
-    void inorder(const Node* node, int k) {
-       if(node==nullptr)
-       {
-        return;
-       }
-       inorder(node->left.get(),k);
-        count++;
-        if (count == k) {
-            result = node->data;
+    void inorder(const Node* node, int k)
+    {
+        if(node==nullptr)
+        {
+            return;
         }
-       inorder(node->right.get(),k);
+
+        inorder(node->left.get(),k);
+        count++;
+        if (count == k)
+        {
+            result = node->data;
+            return;
+        }
+
+        inorder(node->right.get(),k);
     }
     public:
-    int kthSmallest(Node* root, int k) {
-      inorder(root,k);
-      return result;
+    int kthSmallest(Node* root, int k)
+    {
+        count=0;
+        result=0;
+        inorder(root,k);
+        return result;
     }
 };
 int main() {
@@ -38,8 +46,8 @@ int main() {
     root->left->right = std::make_unique<Node>(4);
     root->left->left = std::make_unique<Node>(2);
     root->left->left->left = std::make_unique<Node>(1);
-    Solution sol;
 
+    Solution sol;
     std::cout << sol.kthSmallest(root.get(), 3) << '\n';
 
     return 0;
