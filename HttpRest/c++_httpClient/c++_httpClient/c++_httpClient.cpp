@@ -9,7 +9,6 @@ using json = nlohmann::json;
 int main()
 {
     httplib::Client client("http://127.0.0.1:9090");
-
     auto result = client.Get("/books");
 
     if (!result)
