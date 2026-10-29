@@ -1,6 +1,9 @@
 #include <iostream>
-#include<memory>
+#include <memory>
 #include <climits>
+#include <vector>
+#include<queue>
+#include <optional>
 struct Node
 {
     int data;
@@ -42,22 +45,45 @@ public:
         return count;
     }
 };
+    std::unique_ptr<Node> build_tree(const std::vector<std::optional<int>>&elements)
+    {
+        if (elements.empty() || !elements[0])
+            return nullptr;
+
+        auto root = std::make_unique<Node>(*elements[0]);
+
+        std::queue<Node*> q;
+        q.push(root.get());
+
+         int i = 1;
+
+        while (!q.empty() && i < elements.size())
+        {
+            Node* current = q.front();
+            q.pop();
+
+            if (i < elements.size() && elements[i])
+            {
+                current->left = std::make_unique<Node>(*elements[i]);
+                q.push(current->left.get());
+            }
+            ++i;
+
+            if (i < elements.size() && elements[i])
+            {
+                current->right = std::make_unique<Node>(*elements[i]);
+                q.push(current->right.get());
+            }
+            ++i;
+        }
+
+        return root;
+    }
 int main()
 {
-    auto root = std::make_unique<Node>(3);
-
-    root->left = std::make_unique<Node>(1);
-    root->right = std::make_unique<Node>(4);
-
-    root->left->left = std::make_unique<Node>(3);
-
-    root->right->left = std::make_unique<Node>(1);
-    root->right->right = std::make_unique<Node>(5);
-
+    auto root=build_tree({2,1,1,3, std::nullopt,1,5});
     Solution sol;
-
     std::cout << "Good Nodes: "
         << sol.goodNodes(root) << '\n';
-
     return 0;
 }
