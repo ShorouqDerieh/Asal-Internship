@@ -2,7 +2,7 @@
 #include <memory>
 #include <climits>
 #include <vector>
-#include<queue>
+#include <queue>
 #include <optional>
 struct Node
 {
@@ -15,6 +15,7 @@ class Solution {
 private:
     int count = 0;
     int biggest = 0;
+
     void dfs(std::unique_ptr<Node>& root)
     {
         if (root == nullptr)
@@ -35,6 +36,7 @@ private:
 
         biggest = pre;
     }
+
 public:
     int goodNodes(std::unique_ptr<Node>& root) {
         count = 0;
@@ -48,14 +50,14 @@ public:
     std::unique_ptr<Node> build_tree(const std::vector<std::optional<int>>&elements)
     {
         if (elements.empty() || !elements[0])
+        {
             return nullptr;
+        }
 
         auto root = std::make_unique<Node>(*elements[0]);
-
         std::queue<Node*> q;
         q.push(root.get());
-
-         int i = 1;
+        int i = 1;
 
         while (!q.empty() && i < elements.size())
         {
@@ -82,8 +84,8 @@ public:
 int main()
 {
     auto root=build_tree({2,1,1,3, std::nullopt,1,5});
+
     Solution sol;
-    std::cout << "Good Nodes: "
-        << sol.goodNodes(root) << '\n';
+    std::cout << "Good Nodes: "<< sol.goodNodes(root) << '\n';
     return 0;
 }
