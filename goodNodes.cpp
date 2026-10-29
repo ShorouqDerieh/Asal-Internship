@@ -11,7 +11,8 @@ struct Node
     std::unique_ptr<Node>right;
     explicit Node(int value) :data(value), left(nullptr), right(nullptr) {}
 };
-class Solution {
+class Solution
+{
 private:
     int count = 0;
     int biggest = 0;
@@ -38,7 +39,8 @@ private:
     }
 
 public:
-    int goodNodes(std::unique_ptr<Node>& root) {
+    int goodNodes(std::unique_ptr<Node>& root)
+    {
         count = 0;
         biggest = INT_MIN;
 
@@ -55,10 +57,11 @@ public:
         }
 
         auto root = std::make_unique<Node>(*elements[0]);
+
         std::queue<Node*> q;
         q.push(root.get());
-        int i = 1;
 
+        int i = 1;
         while (!q.empty() && i < elements.size())
         {
             Node* current = q.front();
@@ -69,6 +72,7 @@ public:
                 current->left = std::make_unique<Node>(*elements[i]);
                 q.push(current->left.get());
             }
+
             ++i;
 
             if (i < elements.size() && elements[i])
@@ -76,11 +80,13 @@ public:
                 current->right = std::make_unique<Node>(*elements[i]);
                 q.push(current->right.get());
             }
+
             ++i;
         }
 
         return root;
     }
+
 int main()
 {
     auto root=build_tree({2,1,1,3, std::nullopt,1,5});
