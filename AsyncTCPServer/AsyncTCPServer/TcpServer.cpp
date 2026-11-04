@@ -7,13 +7,12 @@ using tcp = boost::asio::ip::tcp;
 
 TcpServer::TcpServer(
     boost::asio::io_context& ioContext,
-    int port
+    unsigned short port,
+    std::shared_ptr<ClientManager> manager
 )
     : ioContext(ioContext),
-    acceptor(
-        ioContext,
-        tcp::endpoint(tcp::v4(), port)
-    )
+    acceptor(ioContext, tcp::endpoint(tcp::v4(), port)),
+    manager_(std::move(manager))
 {
 }
 
@@ -30,7 +29,8 @@ void TcpServer::doAccept() {
 
                 if (!ec) {
                     auto session = std::make_shared<ClientSession>(
-                        std::move(socket)
+                        std::move(socket),
+                        manager_
                     );
 
                     session->start();
