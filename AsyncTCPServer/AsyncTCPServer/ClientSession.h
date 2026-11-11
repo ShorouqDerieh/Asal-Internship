@@ -31,9 +31,10 @@ private:
     void enqueue(std::string message);
     void doWrite();
     void stop();
-
+    void handleCommand(const std::string& input);
 public:
     ClientSession( tcp::socket socket,std::weak_ptr<ClientManager> manager);
     void start();
     void send(std::string message);
+    void requestStop();
 };

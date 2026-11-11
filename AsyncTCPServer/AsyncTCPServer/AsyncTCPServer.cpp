@@ -76,7 +76,12 @@ int main(int argc, char* argv[]) {
                 ioContext.run();
                 });
         }
+        std::cout << "Press Enter to stop the server...\n";
 
+        std::string input;
+        std::getline(std::cin, input);
+
+        server.stop();
         for (auto& worker : workers) {
             worker.join();
         }

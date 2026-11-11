@@ -8,6 +8,7 @@
 #include <thread>
 #include "ClientManager.h"
 #include <algorithm>
+#include "CommandHandler.h"
 using tcp = boost::asio::ip::tcp;
 
 ClientSession::ClientSession(
@@ -68,23 +69,25 @@ void ClientSession::doRead() {
 
                     std::string message;
                     std::getline(input, message);
-
-                    if (!message.empty() &&
-                        message.back() == '\r') {
+                    if (!message.empty() && message.back() == '\r') {
                         message.pop_back();
                     }
-
                     if (!self->registered_) {
                         self->handleRegistration(message);
                     }
-                    else {
-                        std::cout << self->username_
-                            << ": " << message << '\n';
-
-                        self->enqueue(
-                            "Server received: " + message + "\n"
-                        );
+                    else if (!message.empty() && message.front() == '/') {
+                        self->handleCommand(message);
                     }
+                    else {
+                        if (auto manager = self->manager_.lock()) {
+                            manager->broadcast(self->username_, message);
+                        }
+                        else {
+                            self->stop();
+                            return;
+                        }
+                    }
+
 
                     self->doRead();
             }
@@ -203,4 +206,59 @@ void ClientSession::handleRegistration(
     registered_ = true;
 
     enqueue("Username registered successfully.\n");
+}
+void ClientSession::handleCommand(
+    const std::string& input
+) {
+    auto command = CommandHandler::parse(input);
+    auto manager = manager_.lock();
+
+    if (!manager) {
+        stop();
+        return;
+    }
+
+    switch (command.type) {
+
+    case CommandType::Users: {
+        auto users = manager->getUsers();
+
+        std::string response = "Connected users:\n";
+
+        for (const auto& user : users) {
+            response += "- " + user + "\n";
+        }
+
+        enqueue(response);
+        break;
+    }
+
+    case CommandType::Quit:
+        stop();
+        break;
+
+    case CommandType::PrivateMessage:
+        if (!manager->sendPrivate(
+            username_,
+            command.target,
+            command.message)) {
+
+            enqueue("User not found.\n");
+        }
+        break;
+
+    case CommandType::Invalid:
+        enqueue("Invalid command.\n");
+        break;
+    }
+}
+void ClientSession::requestStop() {
+    auto self = shared_from_this();
+
+    boost::asio::post(
+        strand_,
+        [self]() {
+            self->stop();
+        }
+    );
 }

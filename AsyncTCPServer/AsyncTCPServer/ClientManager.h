@@ -1,6 +1,4 @@
 #pragma once
-#pragma once
-
 #include <memory>
 #include <mutex>
 #include <string>
@@ -29,4 +27,13 @@ public:
         const ClientSession* expectedSession
     );
     std::vector<std::string> getUsers() const;
+    void broadcast(
+        const std::string& sender,
+        const std::string& message
+    );
+    bool sendPrivate(
+        const std::string& sender,
+        const std::string& target,
+        const std::string& message
+    );
 };
