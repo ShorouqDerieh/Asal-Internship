@@ -52,6 +52,7 @@ void toLowerCase(std::string& text)
 int main()
 {
     Solution solution;
+
     std::vector<std::string> words;
     std::cout << "Enter number of words: ";
     int numWords;
@@ -64,11 +65,14 @@ int main()
         toLowerCase(word);
         words.push_back(word);
     }
+
     std::cout << "Enter the target string: ";
     std::string target;
     std::cin >> target;
     toLowerCase(target);
+
     int result = solution.minValidStrings(words, target);
     std::cout << std::format("Minimum number of valid strings: {}\n", result);
+    
     return 0;
 }
