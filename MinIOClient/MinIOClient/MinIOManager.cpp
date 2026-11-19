@@ -77,9 +77,11 @@ bool MinIOManager::createBucket(std::string_view bucketName) const
     return true;
 }
 
-bool MinIOManager::uploadFile(std::string_view bucketName,
-std::string_view objectKey,
-std::string_view filePath) const
+bool MinIOManager::uploadFile(
+    std::string_view bucketName,
+    std::string_view objectKey,
+    std::string_view filePath
+) const
 {
     auto file = Aws::MakeShared<Aws::FStream>("MinIOUpload",
     std::string(filePath).c_str(),
@@ -108,9 +110,11 @@ std::string_view filePath) const
     return true;
 }
 
-bool MinIOManager::downloadFile(std::string_view bucketName,
-std::string_view objectKey,
-std::string_view destinationPath) const
+bool MinIOManager::downloadFile(
+    std::string_view bucketName,
+    std::string_view objectKey,
+    std::string_view destinationPath
+) const
 {
     Aws::S3::Model::GetObjectRequest request;
     request.SetBucket(std::string(bucketName));

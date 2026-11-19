@@ -69,13 +69,13 @@ int main()
 
             const std::string bucketName = "cpp-training-bucket";
 
+            bool success = false;
+
             std::random_device rd;
             std::mt19937 generator(rd());
             std::uniform_int_distribution<int> distribution(1, 4);
 
             int operation = distribution(generator);
-            bool success = false;
-
             switch (operation)
             {
                 case 1:
@@ -95,8 +95,7 @@ int main()
                     std::cout << "Enter file name to upload: ";
                     std::cin >> fileName;
 
-                    const std::string uploadPath =
-                        "D:\\MinIO\\TestFiles\\" + fileName;
+                    const std::string uploadPath ="D:\\MinIO\\TestFiles\\" + fileName;
 
                     success = manager.uploadFile(bucketName, fileName, uploadPath);
                     break;
@@ -109,8 +108,7 @@ int main()
                     std::cout << "Enter file name to download: ";
                     std::cin >> fileName;
 
-                    const std::string downloadPath =
-                        "D:\\MinIO\\TestFiles\\downloaded_" + fileName;
+                    const std::string downloadPath = "D:\\MinIO\\TestFiles\\downloaded_" + fileName;
 
                     success = manager.downloadFile(bucketName, fileName, downloadPath);
                     break;
