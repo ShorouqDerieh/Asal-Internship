@@ -12,17 +12,15 @@ class TcpServer {
 private:
     boost::asio::io_context& ioContext;
 
-    boost::asio::strand<
-        boost::asio::io_context::executor_type
-    > acceptStrand_;
+    boost::asio::strand<boost::asio::io_context::executor_type> acceptStrand_;
 
     boost::asio::ip::tcp::acceptor acceptor;
 
-    std::shared_ptr<ClientManager> manager_;
+    std::shared_ptr<ClientManager> m_manager;
 
     std::vector<std::weak_ptr<ClientSession>> sessions_;
 
-    bool stopped_ = false;
+    bool m_stopped = false;
 
     void doAccept();
 

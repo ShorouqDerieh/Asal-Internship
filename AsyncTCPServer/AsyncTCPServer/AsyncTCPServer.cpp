@@ -1,6 +1,4 @@
-
 #include <boost/asio.hpp>
-
 #include <charconv>
 #include <iostream>
 #include <mutex>
@@ -12,41 +10,31 @@
 #include "TcpServer.h"
 #include "ClientManager.h"
 
-bool parseUnsigned(
-    const std::string& text,
-    unsigned int& value
-) {
-    auto result = std::from_chars(
-        text.data(),
-        text.data() + text.size(),
-        value
-    );
+bool parseUnsigned(std::string_view text, unsigned int& value) {
+    auto result = std::from_chars(text.data(), text.data() + text.size(), value);
 
-    return result.ec == std::errc{} &&
-        result.ptr == text.data() + text.size();
+    return result.ec == std::errc{} && result.ptr == text.data() + text.size();
 }
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 3) {
-        std::cerr
-            << "Usage: AsyncTCPServer <port> <threads>\n";
+    if (argc != 3)
+    {
+        std::cerr<< "Usage: AsyncTCPServer <port> <threads>\n";
         return 1;
     }
 
     unsigned int portNumber = 0;
     unsigned int threadCount = 0;
 
-    if (!parseUnsigned(argv[1], portNumber) ||
-        portNumber == 0 || portNumber > 65535) {
-
+    if (!parseUnsigned(argv[1], portNumber) ||portNumber == 0 || portNumber > 65535)
+    {
         std::cerr << "Invalid port number\n";
         return 1;
     }
 
-    if (!parseUnsigned(argv[2], threadCount) ||
-        threadCount == 0 || threadCount > 64) {
-
+    if (!parseUnsigned(argv[2], threadCount) ||threadCount == 0 || threadCount > 64)
+    {
         std::cerr << "Invalid thread count (1-64)\n";
         return 1;
     }
@@ -63,8 +51,10 @@ int main(int argc, char* argv[]) {
         std::vector<std::thread> workers;
         std::mutex coutMutex;
 
-        for (unsigned int i = 0; i < threadCount; ++i) {
-            workers.emplace_back([&ioContext, &coutMutex]() {
+        for (unsigned int i = 0; i < threadCount; ++i)
+        {
+            workers.emplace_back([&ioContext, &coutMutex]()
+                {
                 {
                     std::lock_guard<std::mutex> lock(coutMutex);
 
@@ -82,11 +72,13 @@ int main(int argc, char* argv[]) {
         std::getline(std::cin, input);
 
         server.stop();
-        for (auto& worker : workers) {
+        for (auto& worker : workers)
+        {
             worker.join();
         }
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         std::cerr << "Server error: "
             << e.what() << '\n';
         return 1;

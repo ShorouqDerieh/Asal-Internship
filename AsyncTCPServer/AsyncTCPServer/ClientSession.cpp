@@ -1,14 +1,14 @@
-#include "ClientSession.h"
 #include <iostream>
 #include <istream>
 #include <utility>
 #include <memory>
 #include <string>
-#include <boost/asio/write.hpp>
-#include <thread>
-#include "ClientManager.h"
 #include <algorithm>
+#include <thread>
+#include <boost/asio/write.hpp>
+#include "ClientManager.h"
 #include "CommandHandler.h"
+#include "ClientSession.h"
 using tcp = boost::asio::ip::tcp;
 
 ClientSession::ClientSession(
@@ -23,7 +23,8 @@ ClientSession::ClientSession(
 {
 }
 
-void ClientSession::start() {
+void ClientSession::start()
+{
     auto self = shared_from_this();
 
     boost::asio::post(
@@ -34,7 +35,8 @@ void ClientSession::start() {
         }
     );
 }
-void ClientSession::doRead() {
+void ClientSession::doRead()
+{
     if (stopped_) {
         return;
     }
@@ -52,11 +54,14 @@ void ClientSession::doRead() {
                 const boost::system::error_code& ec,
                 std::size_t bytesTransferred
                 ) {
-                    if (ec) {
-                        if (ec == boost::asio::error::eof) {
+                    if (ec)
+                    {
+                        if (ec == boost::asio::error::eof)
+                        {
                             std::cout << "Client disconnected\n";
                         }
-                        else if (ec != boost::asio::error::operation_aborted) {
+                        else if (ec != boost::asio::error::operation_aborted)
+                        {
                             std::cerr << "Read error: "
                                 << ec.message() << '\n';
                         }
@@ -69,20 +74,25 @@ void ClientSession::doRead() {
 
                     std::string message;
                     std::getline(input, message);
-                    if (!message.empty() && message.back() == '\r') {
+                    if (!message.empty() && message.back() == '\r')
+                    {
                         message.pop_back();
                     }
                     if (!self->registered_) {
                         self->handleRegistration(message);
                     }
-                    else if (!message.empty() && message.front() == '/') {
+                    else if (!message.empty() && message.front() == '/')
+                    {
                         self->handleCommand(message);
                     }
-                    else {
-                        if (auto manager = self->manager_.lock()) {
+                    else
+                    {
+                        if (auto manager = self->manager_.lock())
+                        {
                             manager->broadcast(self->username_, message);
                         }
-                        else {
+                        else
+                        {
                             self->stop();
                             return;
                         }
@@ -94,7 +104,8 @@ void ClientSession::doRead() {
         )
     );
 }
-void ClientSession::send(std::string message) {
+void ClientSession::send(std::string message)
+{
     auto self = shared_from_this();
 
     boost::asio::post(
@@ -104,8 +115,10 @@ void ClientSession::send(std::string message) {
         }
     );
 }
-void ClientSession::doWrite() {
-    if (stopped_ || writeQueue_.empty()) {
+void ClientSession::doWrite()
+{
+    if (stopped_ || writeQueue_.empty())
+    {
         return;
     }
 
@@ -121,22 +134,26 @@ void ClientSession::doWrite() {
                 const boost::system::error_code& ec,
                 std::size_t bytesTransferred
                 ) {
-                    if (ec) {
+                    if (ec)
+                    {
                         self->stop();
                         return;
                     }
 
                     self->writeQueue_.pop_front();
 
-                    if (!self->writeQueue_.empty()) {
+                    if (!self->writeQueue_.empty())
+                    {
                         self->doWrite();
                     }
             }
         )
     );
 }
-void ClientSession::enqueue(std::string message) {
-    if (stopped_) {
+void ClientSession::enqueue(std::string message)
+{
+    if (stopped_)
+    {
         return;
     }
 
@@ -144,19 +161,24 @@ void ClientSession::enqueue(std::string message) {
 
     writeQueue_.push_back(std::move(message));
 
-    if (!writeInProgress) {
+    if (!writeInProgress)
+    {
         doWrite();
     }
 }
-void ClientSession::stop() {
-    if (stopped_) {
+void ClientSession::stop()
+{
+    if (stopped_)
+    {
         return;
     }
 
     stopped_ = true;
 
-    if (registered_) {
-        if (auto manager = manager_.lock()) {
+    if (registered_)
+    {
+        if (auto manager = manager_.lock())
+        {
             manager->removeClient(username_, this);
         }
 
@@ -172,32 +194,37 @@ void ClientSession::handleRegistration(
     bool valid = !username.empty() &&
         username.size() <= 20;
 
-    for (char ch : username) {
+    for (char ch : username)
+    {
         bool allowed =
             (ch >= 'a' && ch <= 'z') ||
             (ch >= 'A' && ch <= 'Z') ||
             (ch >= '0' && ch <= '9') ||
             ch == '_';
 
-        if (!allowed) {
+        if (!allowed)
+        {
             valid = false;
             break;
         }
     }
 
-    if (!valid) {
+    if (!valid)
+    {
         enqueue("Invalid username. Use 1-20 letters, numbers, or underscores.\n");
         return;
     }
 
     auto manager = manager_.lock();
 
-    if (!manager) {
+    if (!manager)
+    {
         stop();
         return;
     }
 
-    if (!manager->addClient(username, shared_from_this())) {
+    if (!manager->addClient(username, shared_from_this()))
+    {
         enqueue("Username already taken. Try another name.\n");
         return;
     }
@@ -209,23 +236,27 @@ void ClientSession::handleRegistration(
 }
 void ClientSession::handleCommand(
     const std::string& input
-) {
+)
+{
     auto command = CommandHandler::parse(input);
     auto manager = manager_.lock();
 
-    if (!manager) {
+    if (!manager)
+    {
         stop();
         return;
     }
 
     switch (command.type) {
 
-    case CommandType::Users: {
+    case CommandType::Users:
+    {
         auto users = manager->getUsers();
 
         std::string response = "Connected users:\n";
 
-        for (const auto& user : users) {
+        for (const auto& user : users)
+        {
             response += "- " + user + "\n";
         }
 
@@ -252,7 +283,8 @@ void ClientSession::handleCommand(
         break;
     }
 }
-void ClientSession::requestStop() {
+void ClientSession::requestStop()
+{
     auto self = shared_from_this();
 
     boost::asio::post(

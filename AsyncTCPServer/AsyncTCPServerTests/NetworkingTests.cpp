@@ -350,8 +350,7 @@ BOOST_AUTO_TEST_CASE(UsernameRegistrationNetworkingTest)
         tcp::endpoint(asio::ip::address_v4::loopback(), 0)
     );
 
-    unsigned short port =
-        acceptor.local_endpoint().port();
+    unsigned short port =acceptor.local_endpoint().port();
 
     // Alice connection
     tcp::socket alice(ioContext);

@@ -2,28 +2,25 @@
 
 #include <sstream>
 
-ParsedCommand CommandHandler::parse(
-    const std::string& input
-) {
+ParsedCommand CommandHandler::parse(const std::string& input)
+{
     std::istringstream stream(input);
 
     std::string command;
     stream >> command;
 
-    if (command == "/users" || command == "/quit") {
+    if (command == "/users" || command == "/quit")
+    {
         std::string extra;
 
-        if (stream >> extra) {
+        if (stream >> extra)
+        {
             return {};
         }
 
-        return {
-            command == "/users"
-                ? CommandType::Users
-                : CommandType::Quit,
-            "",
-            ""
-        };
+        const CommandType type =(command == "/users")? CommandType::Users: CommandType::Quit;
+
+        return { type, "", "" };
     }
 
     if (command == "/msg") {

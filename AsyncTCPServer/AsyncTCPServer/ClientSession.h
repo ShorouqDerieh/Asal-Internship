@@ -14,18 +14,18 @@ class ClientSession
 private:
     using tcp = boost::asio::ip::tcp;
 
-    tcp::socket socket_;
+    tcp::socket m_socket;
 
-    boost::asio::strand<boost::asio::any_io_executor> strand_;
+    boost::asio::strand<boost::asio::any_io_executor> m_strand;
 
-    boost::asio::streambuf buffer_;
-    std::deque<std::string> writeQueue_;
-    std::string username_;
-    bool registered_ = false;
+    boost::asio::streambuf m_buffer;
+    std::deque<std::string> m_writeQueue;
+    std::string m_username;
+    bool m_registered_ = false;
 
     void handleRegistration(const std::string& username);
     bool stopped_ = false;
-    std::weak_ptr<ClientManager> manager_;
+    std::weak_ptr<ClientManager> m_manager;
 
     void doRead();
     void enqueue(std::string message);

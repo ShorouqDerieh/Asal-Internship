@@ -16,7 +16,7 @@ TcpServer::TcpServer(
     : ioContext(ioContext),
     acceptStrand_(boost::asio::make_strand(ioContext)),
     acceptor(ioContext, tcp::endpoint(tcp::v4(), port)),
-    manager_(std::move(manager))
+    m_manager(std::move(manager))
 {
 }
 
@@ -31,7 +31,8 @@ void TcpServer::start() {
 }
 
 void TcpServer::doAccept() {
-    if (stopped_) {
+    if (m_stopped)
+    {
         return;
     }
 
@@ -44,22 +45,22 @@ void TcpServer::doAccept() {
                 const boost::system::error_code& ec,
                 tcp::socket socket
                 ) {
-                    if (stopped_) {
+                    if (m_stopped)
+                    {
                         return;
                     }
 
-                    if (ec) {
-                        if (ec != boost::asio::error::operation_aborted) {
+                    if (ec)
+                    {
+                        if (ec != boost::asio::error::operation_aborted)
+                        {
                             std::cerr << "Accept error: "
                                 << ec.message() << '\n';
                         }
                     }
-                    else {
-                        auto session =
-                            std::make_shared<ClientSession>(
-                                std::move(socket),
-                                manager_
-                            );
+                    else
+                    {
+                        auto session =std::make_shared<ClientSession>(std::move(socket),m_manager);
 
                         sessions_.push_back(session);
 
@@ -77,7 +78,8 @@ void TcpServer::doAccept() {
                         );
                     }
 
-                    if (!stopped_ && acceptor.is_open()) {
+                    if (!m_stopped && acceptor.is_open())
+                    {
                         doAccept();
                     }
             }
@@ -85,28 +87,33 @@ void TcpServer::doAccept() {
     );
 }
 
-void TcpServer::stop() {
+void TcpServer::stop()
+{
     boost::asio::post(
         acceptStrand_,
         [this]() {
-            if (stopped_) {
+            if (m_stopped)
+            {
                 return;
             }
 
-            stopped_ = true;
+            m_stopped = true;
 
             std::cout << "Stopping server...\n";
 
             boost::system::error_code ec;
             acceptor.close(ec);
 
-            if (ec) {
+            if (ec)
+            {
                 std::cerr << "Acceptor close error: "
                     << ec.message() << '\n';
             }
 
-            for (const auto& weakSession : sessions_) {
-                if (auto session = weakSession.lock()) {
+            for (const auto& weakSession : sessions_)
+            {
+                if (auto session = weakSession.lock())
+                {
                     session->requestStop();
                 }
             }

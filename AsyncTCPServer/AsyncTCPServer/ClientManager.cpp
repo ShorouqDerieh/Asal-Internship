@@ -1,91 +1,77 @@
 #include "ClientManager.h"
 #include "ClientSession.h"
 #include <utility>
+#include <format>
+#include <string_view>
 
-bool ClientManager::addClient(
-    const std::string& username,
-    std::shared_ptr<ClientSession> session
-) {
+bool ClientManager::addClient(std::string_view username,std::shared_ptr<ClientSession> session)
+{
     std::lock_guard<std::mutex> lock(mutex_);
-
-    auto [it, inserted] = clients_.emplace(
-        username,
-        std::move(session)
-    );
-
+    auto [it, inserted] = m_clients.emplace(username,std::move(session));
     return inserted;
 }
-void ClientManager::removeClient(
-    const std::string& username,
-    const ClientSession* expectedSession
-) {
+void ClientManager::removeClient(std::string_view username,const ClientSession* expectedSession)
+{
     std::lock_guard<std::mutex> lock(mutex_);
 
-    auto it = clients_.find(username);
+    auto it = m_clients.find(std::string(username));
 
-    if (it != clients_.end() &&
-        it->second.get() == expectedSession) {
-        clients_.erase(it);
+    if (it != m_clients.end() &&it->second.get() == expectedSession)
+    {
+        m_clients.erase(it);
     }
 }
-std::vector<std::string>
-ClientManager::getUsers() const {
-
+std::vector<std::string>ClientManager::getUsers() const
+{
     std::lock_guard<std::mutex> lock(mutex_);
 
     std::vector<std::string> users;
 
-    for (const auto& [username, session] : clients_) {
+    for (const auto& [username, session] : m_clients)
+    {
         users.push_back(username);
     }
 
     return users;
 }
-void ClientManager::broadcast(
-    const std::string& sender,
-    const std::string& message
-) {
+void ClientManager::broadcast(std::string_view sender,std::string_view message) {
     std::vector<std::shared_ptr<ClientSession>> recipients;
-
     {
         std::lock_guard<std::mutex> lock(mutex_);
 
-        for (const auto& [username, session] : clients_) {
-            if (username != sender) {
+        for (const auto& [username, session] : m_clients)
+        {
+            if (username != sender)
+            {
                 recipients.push_back(session);
             }
         }
     }
 
-    std::string formattedMessage =
-        sender + ": " + message + "\n";
+    std::string formattedMessage =std::format("{}: {}\n", sender, message);
 
     for (const auto& session : recipients) {
         session->send(formattedMessage);
     }
 }
-bool ClientManager::sendPrivate(
-    const std::string& sender,
-    const std::string& target,
-    const std::string& message
-) {
+bool ClientManager::sendPrivate(std::string_view sender,std::string_view target,std::string_view message)
+{
     std::shared_ptr<ClientSession> recipient;
 
     {
         std::lock_guard<std::mutex> lock(mutex_);
 
-        auto it = clients_.find(target);
+        auto it = m_clients.find(std::string(target));
 
-        if (it == clients_.end()) {
+        if (it == m_clients.end())
+        {
             return false;
         }
 
         recipient = it->second;
     }
 
-    recipient->send(
-        "[Private] " + sender + ": " + message + "\n"
-    );
+    recipient->send(std::format("[Private] {}: {}\n", sender, message));
 
     return true;
 }

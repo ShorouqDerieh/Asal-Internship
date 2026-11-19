@@ -9,31 +9,23 @@ class ClientSession;
 
 class ClientManager {
 private:
-    std::unordered_map<
-        std::string,
-        std::shared_ptr<ClientSession>
-    > clients_;
+    std::unordered_map<std::string,std::shared_ptr<ClientSession>> m_clients;
 
     mutable std::mutex mutex_;
 
 public:
-    bool addClient(
-        const std::string& username,
-        std::shared_ptr<ClientSession> session
-    );
+    bool addClient(std::string_view username,
+    std::shared_ptr<ClientSession> session);
 
-    void removeClient(
-        const std::string& username,
-        const ClientSession* expectedSession
-    );
+    void removeClient(std::string_view username,
+    const ClientSession* expectedSession);
+
     std::vector<std::string> getUsers() const;
-    void broadcast(
-        const std::string& sender,
-        const std::string& message
-    );
-    bool sendPrivate(
-        const std::string& sender,
-        const std::string& target,
-        const std::string& message
-    );
+
+    void broadcast(std::string_view sender,
+    std::string_view message);
+
+    bool sendPrivate(std::string_view sender,
+    std::string_view target,
+    std::string_view message);
 };
