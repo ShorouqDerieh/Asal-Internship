@@ -1,12 +1,10 @@
-
-#include "MinIOManager.h"
-
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
-
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <random>
+#include "MinIOManager.h"
 
 std::string getEnvironmentVariable(const char* name)
 {
@@ -23,6 +21,36 @@ std::string getEnvironmentVariable(const char* name)
 
     return result;
 }
+#include <optional>
+
+struct MinIOConfiguration
+{
+    Aws::Auth::AWSCredentials credentials;
+    Aws::Client::ClientConfiguration clientConfig;
+};
+
+std::optional<MinIOConfiguration> configureMinIO()
+{
+    const std::string accessKey = getEnvironmentVariable("MINIO_ACCESS_KEY");
+
+    const std::string secretKey = getEnvironmentVariable("MINIO_SECRET_KEY");
+
+    if (accessKey.empty() || secretKey.empty())
+    {
+        std::cerr << "Missing MinIO credentials.\n";
+        return std::nullopt;
+    }
+
+    MinIOConfiguration configuration;
+
+    configuration.credentials =Aws::Auth::AWSCredentials(accessKey, secretKey);
+
+    configuration.clientConfig.region = "us-east-1";
+    configuration.clientConfig.endpointOverride = "http://127.0.0.1:9000";
+    configuration.clientConfig.scheme = Aws::Http::Scheme::HTTP;
+
+    return configuration;
+}
 
 int main()
 {
@@ -32,62 +60,72 @@ int main()
     int exitCode = 0;
 
     {
-        const std::string accessKey =
-            getEnvironmentVariable("MINIO_ACCESS_KEY");
+        auto configuration = configureMinIO();
 
-        const std::string secretKey =
-            getEnvironmentVariable("MINIO_SECRET_KEY");
-
-        if (accessKey.empty() || secretKey.empty())
+        if (!configuration)
         {
-            std::cerr << "Missing MinIO credentials.\n";
             exitCode = 1;
         }
         else
         {
-            Aws::Client::ClientConfiguration config;
-            config.region = "us-east-1";
-            config.endpointOverride = "http://127.0.0.1:9000";
-            config.scheme = Aws::Http::Scheme::HTTP;
-
-            Aws::Auth::AWSCredentials credentials(
-                accessKey,
-                secretKey
+            MinIOManager manager(
+                configuration->credentials,
+                configuration->clientConfig
             );
-
-            MinIOManager manager(credentials, config);
 
             const std::string bucketName = "cpp-training-bucket";
 
-            if (!manager.createBucket(bucketName))
+            std::random_device rd;
+            std::mt19937 generator(rd());
+            std::uniform_int_distribution<int> distribution(1, 4);
+
+            int operation = distribution(generator);
+            bool success = false;
+
+            switch (operation)
+            {
+            case 1:
+                std::cout << "Creating bucket...\n";
+                success = manager.createBucket(bucketName);
+                break;
+
+            case 2:
+                std::cout << "Listing buckets...\n";
+                success = manager.listBuckets();
+                break;
+
+            case 3:
+            {
+                std::string fileName;
+
+                std::cout << "Enter file name to upload: ";
+                std::cin >> fileName;
+
+                const std::string uploadPath =
+                    "D:\\MinIO\\TestFiles\\" + fileName;
+
+                success = manager.uploadFile(bucketName, fileName, uploadPath);
+                break;
+            }
+
+            case 4:
+            {
+                std::string fileName;
+
+                std::cout << "Enter file name to download: ";
+                std::cin >> fileName;
+
+                const std::string downloadPath =
+                    "D:\\MinIO\\TestFiles\\downloaded_" + fileName;
+
+                success = manager.downloadFile(bucketName, fileName, downloadPath);
+                break;
+            }
+            }
+
+            if (!success)
             {
                 exitCode = 1;
-            }
-            else
-            {
-                if (!manager.listBuckets())
-                {
-                    exitCode = 1;
-                }
-
-                const bool uploaded = manager.uploadFile(
-                    bucketName,
-                    "hello.txt",
-                    "D:\\MinIO\\TestFiles\\hello.txt"
-                );
-
-                if (!uploaded)
-                {
-                    exitCode = 1;
-                }
-                else if (!manager.downloadFile(
-                    bucketName,
-                    "hello.txt",
-                    "D:\\MinIO\\TestFiles\\downloaded_hello.txt"
-                ))
-                {
-                    exitCode = 1;
-                }
             }
         }
     }

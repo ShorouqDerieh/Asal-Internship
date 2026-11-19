@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <aws/core/auth/AWSCredentials.h>
@@ -20,19 +19,15 @@ public:
 
     bool listBuckets() const;
 
-    bool bucketExists(const std::string& bucketName) const;
+    bool bucketExists(std::string_view bucketName) const;
 
-    bool createBucket(const std::string& bucketName) const;
+    bool createBucket(std::string_view bucketName) const;
 
-    bool uploadFile(
-        const std::string& bucketName,
-        const std::string& objectKey,
-        const std::string& filePath
-    ) const;
+    bool uploadFile(const std::string& bucketName,
+    const std::string& objectKey,
+    const std::string& filePath) const;
 
-    bool downloadFile(
-        const std::string& bucketName,
-        const std::string& objectKey,
-        const std::string& destinationPath
-    ) const;
+    bool downloadFile(std::string_view bucketName,
+    std::string_view objectKey,
+    std::string_view destinationPath) const;
 };
