@@ -12,12 +12,7 @@
 
 MinIOManager::MinIOManager(const Aws::Auth::AWSCredentials& credentials,
 const Aws::Client::ClientConfiguration& config)
-    : client(
-        credentials,
-        config,
-        Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy::Never,
-        false
-    )
+    : client(credentials,config,Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy::Never,false)
 {
 }
 
@@ -82,12 +77,12 @@ bool MinIOManager::createBucket(std::string_view bucketName) const
     return true;
 }
 
-bool MinIOManager::uploadFile(const std::string& bucketName,
-const std::string& objectKey,
-const std::string& filePath) const
+bool MinIOManager::uploadFile(std::string_view bucketName,
+std::string_view objectKey,
+std::string_view filePath) const
 {
     auto file = Aws::MakeShared<Aws::FStream>("MinIOUpload",
-    filePath.c_str(),
+    std::string(filePath).c_str(),
     std::ios::in | std::ios::binary
     );
 

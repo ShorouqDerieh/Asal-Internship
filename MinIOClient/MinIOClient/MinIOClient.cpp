@@ -4,7 +4,9 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <optional>
 #include "MinIOManager.h"
+#include "MinIOClient.hpp"
 
 std::string getEnvironmentVariable(const char* name)
 {
@@ -21,13 +23,6 @@ std::string getEnvironmentVariable(const char* name)
 
     return result;
 }
-#include <optional>
-
-struct MinIOConfiguration
-{
-    Aws::Auth::AWSCredentials credentials;
-    Aws::Client::ClientConfiguration clientConfig;
-};
 
 std::optional<MinIOConfiguration> configureMinIO()
 {
@@ -43,7 +38,7 @@ std::optional<MinIOConfiguration> configureMinIO()
 
     MinIOConfiguration configuration;
 
-    configuration.credentials =Aws::Auth::AWSCredentials(accessKey, secretKey);
+    configuration.credentials = Aws::Auth::AWSCredentials(accessKey, secretKey);
 
     configuration.clientConfig.region = "us-east-1";
     configuration.clientConfig.endpointOverride = "http://127.0.0.1:9000";
@@ -61,7 +56,6 @@ int main()
 
     {
         auto configuration = configureMinIO();
-
         if (!configuration)
         {
             exitCode = 1;
@@ -84,43 +78,43 @@ int main()
 
             switch (operation)
             {
-            case 1:
-                std::cout << "Creating bucket...\n";
-                success = manager.createBucket(bucketName);
-                break;
+                case 1:
+                    std::cout << "Creating bucket...\n";
+                    success = manager.createBucket(bucketName);
+                    break;
 
-            case 2:
-                std::cout << "Listing buckets...\n";
-                success = manager.listBuckets();
-                break;
+                case 2:
+                    std::cout << "Listing buckets...\n";
+                    success = manager.listBuckets();
+                    break;
 
-            case 3:
-            {
-                std::string fileName;
+                case 3:
+                {
+                    std::string fileName;
 
-                std::cout << "Enter file name to upload: ";
-                std::cin >> fileName;
+                    std::cout << "Enter file name to upload: ";
+                    std::cin >> fileName;
 
-                const std::string uploadPath =
-                    "D:\\MinIO\\TestFiles\\" + fileName;
+                    const std::string uploadPath =
+                        "D:\\MinIO\\TestFiles\\" + fileName;
 
-                success = manager.uploadFile(bucketName, fileName, uploadPath);
-                break;
-            }
+                    success = manager.uploadFile(bucketName, fileName, uploadPath);
+                    break;
+                }
 
-            case 4:
-            {
-                std::string fileName;
+                case 4:
+                {
+                    std::string fileName;
 
-                std::cout << "Enter file name to download: ";
-                std::cin >> fileName;
+                    std::cout << "Enter file name to download: ";
+                    std::cin >> fileName;
 
-                const std::string downloadPath =
-                    "D:\\MinIO\\TestFiles\\downloaded_" + fileName;
+                    const std::string downloadPath =
+                        "D:\\MinIO\\TestFiles\\downloaded_" + fileName;
 
-                success = manager.downloadFile(bucketName, fileName, downloadPath);
-                break;
-            }
+                    success = manager.downloadFile(bucketName, fileName, downloadPath);
+                    break;
+                }
             }
 
             if (!success)
