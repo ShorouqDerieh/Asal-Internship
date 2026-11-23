@@ -23,6 +23,6 @@ public:
     void broadcast(std::string_view sender,std::string_view message);
 
     bool sendPrivate(std::string_view sender,
-    std::string_view target,
-    std::string_view message);
+                     std::string_view target,
+                     std::string_view message);
 };

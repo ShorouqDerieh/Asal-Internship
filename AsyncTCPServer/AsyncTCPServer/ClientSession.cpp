@@ -12,11 +12,7 @@
 using tcp = boost::asio::ip::tcp;
 
 ClientSession::ClientSession(tcp::socket socket,std::weak_ptr<ClientManager> manager)
-    : m_socket(std::move(socket)),
-    m_strand(
-        boost::asio::make_strand(m_socket.get_executor())
-    ),
-    m_manager(std::move(manager))
+    : m_socket(std::move(socket)),m_strand(boost::asio::make_strand(m_socket.get_executor())), m_manager(std::move(manager))
 {
 }
 
@@ -34,7 +30,8 @@ void ClientSession::start()
 }
 void ClientSession::doRead()
 {
-    if (stopped_) {
+    if (stopped_)
+    {
         return;
     }
 
@@ -101,12 +98,11 @@ void ClientSession::doRead()
         )
     );
 }
+
 void ClientSession::send(std::string message)
 {
     auto self = shared_from_this();
-
-    boost::asio::post(
-        m_strand,
+    boost::asio::post(m_strand,
         [self, message = std::move(message)]() mutable {
             self->enqueue(std::move(message));
         }
@@ -120,11 +116,8 @@ void ClientSession::doWrite()
     }
 
     auto self = shared_from_this();
-
-    boost::asio::async_write(
-        m_socket,
+    boost::asio::async_write( m_socket,
         boost::asio::buffer(m_writeQueue.front()),
-
         boost::asio::bind_executor(
             m_strand,
             [self](
@@ -163,6 +156,7 @@ void ClientSession::enqueue(std::string message)
         doWrite();
     }
 }
+
 void ClientSession::stop()
 {
     if (stopped_)
@@ -185,11 +179,10 @@ void ClientSession::stop()
     boost::system::error_code ec;
     m_socket.close(ec);
 }
-void ClientSession::handleRegistration(
-    const std::string& username
-) {
-    bool valid = !username.empty() &&
-        username.size() <= 20;
+
+void ClientSession::handleRegistration(const std::string& username)
+{
+    bool valid = !username.empty() &&username.size() <= 20;
 
     for (char ch : username)
     {
@@ -231,9 +224,7 @@ void ClientSession::handleRegistration(
 
     enqueue("Username registered successfully.\n");
 }
-void ClientSession::handleCommand(
-    const std::string& input
-)
+void ClientSession::handleCommand(const std::string& input)
 {
     auto command = CommandHandler::parse(input);
     auto manager = m_manager.lock();
