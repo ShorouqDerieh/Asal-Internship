@@ -102,8 +102,7 @@ void ClientSession::doRead()
 void ClientSession::send(std::string message)
 {
     auto self = shared_from_this();
-    boost::asio::post(
-        m_strand,
+    boost::asio::post(m_strand,
         [self, message = std::move(message)]() mutable {
             self->enqueue(std::move(message));
         }
@@ -117,9 +116,7 @@ void ClientSession::doWrite()
     }
 
     auto self = shared_from_this();
-
-    boost::asio::async_write(
-        m_socket,
+    boost::asio::async_write( m_socket,
         boost::asio::buffer(m_writeQueue.front()),
         boost::asio::bind_executor(
             m_strand,
@@ -183,9 +180,8 @@ void ClientSession::stop()
     m_socket.close(ec);
 }
 
-void ClientSession::handleRegistration(
-    const std::string& username
-) {
+void ClientSession::handleRegistration(const std::string& username)
+{
     bool valid = !username.empty() &&username.size() <= 20;
 
     for (char ch : username)
