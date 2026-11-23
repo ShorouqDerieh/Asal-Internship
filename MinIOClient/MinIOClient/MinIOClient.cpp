@@ -62,11 +62,7 @@ int main()
         }
         else
         {
-            MinIOManager manager(
-                configuration->credentials,
-                configuration->clientConfig
-            );
-
+            MinIOManager manager(configuration->credentials,configuration->clientConfig);
             const std::string bucketName = "cpp-training-bucket";
 
             bool success = false;
