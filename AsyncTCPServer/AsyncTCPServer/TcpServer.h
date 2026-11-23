@@ -25,10 +25,9 @@ private:
     void doAccept();
 
 public:
-    TcpServer(
-        boost::asio::io_context& ioContext,
-        unsigned short port,
-        std::shared_ptr<ClientManager> manager
+    TcpServer(boost::asio::io_context& ioContext,
+              unsigned short port,
+              std::shared_ptr<ClientManager> manager
     );
 
     void start();
