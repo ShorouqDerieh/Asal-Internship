@@ -33,7 +33,8 @@ ParsedCommand CommandHandler::parse(const std::string& input)
 
         std::getline(stream >> std::ws, message);
 
-        if (message.empty()) {
+        if (message.empty())
+        {
             return {};
         }
 
