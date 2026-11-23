@@ -1,17 +1,15 @@
-#include "TcpServer.h"
-#include "ClientSession.h"
-
 #include <iostream>
 #include <memory>
 #include <utility>
 #include <algorithm>
+#include "TcpServer.h"
+#include "ClientSession.h"
 
 using tcp = boost::asio::ip::tcp;
 
-TcpServer::TcpServer(
-    boost::asio::io_context& ioContext,
-    unsigned short port,
-    std::shared_ptr<ClientManager> manager
+TcpServer::TcpServer(boost::asio::io_context& ioContext,
+                    unsigned short port,
+                    std::shared_ptr<ClientManager> manager
 )
     : ioContext(ioContext),
     acceptStrand_(boost::asio::make_strand(ioContext)),
