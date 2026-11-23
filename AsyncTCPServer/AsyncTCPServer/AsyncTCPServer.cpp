@@ -10,13 +10,24 @@
 #include "TcpServer.h"
 #include "ClientManager.h"
 
-bool parseUnsigned(std::string_view text, unsigned int& value) {
+bool parseUnsigned(std::string_view text, unsigned int& value)
+{
     auto result = std::from_chars(text.data(), text.data() + text.size(), value);
-
     return result.ec == std::errc{} && result.ptr == text.data() + text.size();
 }
 
-int main(int argc, char* argv[]) {
+bool isValidPortNumber(unsigned int portNumber)
+{
+    return portNumber > 0 && portNumber <= 65535;
+}
+
+bool isValidThreadCount(unsigned int threadCount)
+{
+    return threadCount > 0 && threadCount <= 64;
+}
+
+int main(int argc, char* argv[])
+{
 
     if (argc != 3)
     {
@@ -27,13 +38,13 @@ int main(int argc, char* argv[]) {
     unsigned int portNumber = 0;
     unsigned int threadCount = 0;
 
-    if (!parseUnsigned(argv[1], portNumber) ||portNumber == 0 || portNumber > 65535)
+    if (!parseUnsigned(argv[1], portNumber) || !isValidPortNumber(portNumber))
     {
         std::cerr << "Invalid port number\n";
         return 1;
     }
 
-    if (!parseUnsigned(argv[2], threadCount) ||threadCount == 0 || threadCount > 64)
+    if (!parseUnsigned(argv[2], threadCount) || !isValidThreadCount(threadCount))
     {
         std::cerr << "Invalid thread count (1-64)\n";
         return 1;
@@ -41,11 +52,8 @@ int main(int argc, char* argv[]) {
 
     try {
         boost::asio::io_context ioContext;
-
         auto manager = std::make_shared<ClientManager>();
-
         TcpServer server(ioContext, static_cast<unsigned short>(portNumber), manager);
-
         server.start();
 
         std::vector<std::thread> workers;

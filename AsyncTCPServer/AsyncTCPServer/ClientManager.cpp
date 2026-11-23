@@ -10,17 +10,17 @@ bool ClientManager::addClient(std::string_view username,std::shared_ptr<ClientSe
     auto [it, inserted] = m_clients.emplace(username,std::move(session));
     return inserted;
 }
+
 void ClientManager::removeClient(std::string_view username,const ClientSession* expectedSession)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-
     auto it = m_clients.find(std::string(username));
-
     if (it != m_clients.end() &&it->second.get() == expectedSession)
     {
         m_clients.erase(it);
     }
 }
+
 std::vector<std::string>ClientManager::getUsers() const
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -34,6 +34,7 @@ std::vector<std::string>ClientManager::getUsers() const
 
     return users;
 }
+
 void ClientManager::broadcast(std::string_view sender,std::string_view message) {
     std::vector<std::shared_ptr<ClientSession>> recipients;
     {
@@ -54,6 +55,7 @@ void ClientManager::broadcast(std::string_view sender,std::string_view message) 
         session->send(formattedMessage);
     }
 }
+
 bool ClientManager::sendPrivate(std::string_view sender,std::string_view target,std::string_view message)
 {
     std::shared_ptr<ClientSession> recipient;

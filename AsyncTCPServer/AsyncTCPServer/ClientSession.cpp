@@ -11,15 +11,12 @@
 #include "ClientSession.h"
 using tcp = boost::asio::ip::tcp;
 
-ClientSession::ClientSession(
-    tcp::socket socket,
-    std::weak_ptr<ClientManager> manager
-)
-    : socket_(std::move(socket)),
-    strand_(
-        boost::asio::make_strand(socket_.get_executor())
+ClientSession::ClientSession(tcp::socket socket,std::weak_ptr<ClientManager> manager)
+    : m_socket(std::move(socket)),
+    m_strand(
+        boost::asio::make_strand(m_socket.get_executor())
     ),
-    manager_(std::move(manager))
+    m_manager(std::move(manager))
 {
 }
 
@@ -28,7 +25,7 @@ void ClientSession::start()
     auto self = shared_from_this();
 
     boost::asio::post(
-        strand_,
+        m_strand,
         [self]() {
             self->enqueue("Enter your username:\n");
             self->doRead();
@@ -44,12 +41,12 @@ void ClientSession::doRead()
     auto self = shared_from_this();
 
     boost::asio::async_read_until(
-        socket_,
-        buffer_,
+        m_socket,
+        m_buffer,
         '\n',
 
         boost::asio::bind_executor(
-            strand_,
+            m_strand,
             [self](
                 const boost::system::error_code& ec,
                 std::size_t bytesTransferred
@@ -70,7 +67,7 @@ void ClientSession::doRead()
                         return;
                     }
 
-                    std::istream input(&self->buffer_);
+                    std::istream input(&self->m_buffer);
 
                     std::string message;
                     std::getline(input, message);
@@ -78,7 +75,7 @@ void ClientSession::doRead()
                     {
                         message.pop_back();
                     }
-                    if (!self->registered_) {
+                    if (!self->m_registered_) {
                         self->handleRegistration(message);
                     }
                     else if (!message.empty() && message.front() == '/')
@@ -87,9 +84,9 @@ void ClientSession::doRead()
                     }
                     else
                     {
-                        if (auto manager = self->manager_.lock())
+                        if (auto manager = self->m_manager.lock())
                         {
-                            manager->broadcast(self->username_, message);
+                            manager->broadcast(self->m_username, message);
                         }
                         else
                         {
@@ -109,7 +106,7 @@ void ClientSession::send(std::string message)
     auto self = shared_from_this();
 
     boost::asio::post(
-        strand_,
+        m_strand,
         [self, message = std::move(message)]() mutable {
             self->enqueue(std::move(message));
         }
@@ -117,7 +114,7 @@ void ClientSession::send(std::string message)
 }
 void ClientSession::doWrite()
 {
-    if (stopped_ || writeQueue_.empty())
+    if (stopped_ || m_writeQueue.empty())
     {
         return;
     }
@@ -125,11 +122,11 @@ void ClientSession::doWrite()
     auto self = shared_from_this();
 
     boost::asio::async_write(
-        socket_,
-        boost::asio::buffer(writeQueue_.front()),
+        m_socket,
+        boost::asio::buffer(m_writeQueue.front()),
 
         boost::asio::bind_executor(
-            strand_,
+            m_strand,
             [self](
                 const boost::system::error_code& ec,
                 std::size_t bytesTransferred
@@ -140,9 +137,9 @@ void ClientSession::doWrite()
                         return;
                     }
 
-                    self->writeQueue_.pop_front();
+                    self->m_writeQueue.pop_front();
 
-                    if (!self->writeQueue_.empty())
+                    if (!self->m_writeQueue.empty())
                     {
                         self->doWrite();
                     }
@@ -157,9 +154,9 @@ void ClientSession::enqueue(std::string message)
         return;
     }
 
-    bool writeInProgress = !writeQueue_.empty();
+    bool writeInProgress = !m_writeQueue.empty();
 
-    writeQueue_.push_back(std::move(message));
+    m_writeQueue.push_back(std::move(message));
 
     if (!writeInProgress)
     {
@@ -175,18 +172,18 @@ void ClientSession::stop()
 
     stopped_ = true;
 
-    if (registered_)
+    if (m_registered_)
     {
-        if (auto manager = manager_.lock())
+        if (auto manager = m_manager.lock())
         {
-            manager->removeClient(username_, this);
+            manager->removeClient(m_username, this);
         }
 
-        registered_ = false;
+        m_registered_ = false;
     }
 
     boost::system::error_code ec;
-    socket_.close(ec);
+    m_socket.close(ec);
 }
 void ClientSession::handleRegistration(
     const std::string& username
@@ -215,7 +212,7 @@ void ClientSession::handleRegistration(
         return;
     }
 
-    auto manager = manager_.lock();
+    auto manager = m_manager.lock();
 
     if (!manager)
     {
@@ -229,8 +226,8 @@ void ClientSession::handleRegistration(
         return;
     }
 
-    username_ = username;
-    registered_ = true;
+    m_username = username;
+    m_registered_ = true;
 
     enqueue("Username registered successfully.\n");
 }
@@ -239,7 +236,7 @@ void ClientSession::handleCommand(
 )
 {
     auto command = CommandHandler::parse(input);
-    auto manager = manager_.lock();
+    auto manager = m_manager.lock();
 
     if (!manager)
     {
@@ -270,7 +267,7 @@ void ClientSession::handleCommand(
 
     case CommandType::PrivateMessage:
         if (!manager->sendPrivate(
-            username_,
+            m_username,
             command.target,
             command.message)) {
 
@@ -288,7 +285,7 @@ void ClientSession::requestStop()
     auto self = shared_from_this();
 
     boost::asio::post(
-        strand_,
+        m_strand,
         [self]() {
             self->stop();
         }
