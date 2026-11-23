@@ -23,15 +23,11 @@ public:
 
     bool createBucket(std::string_view bucketName) const;
 
-    bool uploadFile(
-        std::string_view bucketName,
-        std::string_view objectKey,
-        std::string_view filePath
-    ) const;
+    bool uploadFile(std::string_view bucketName,
+    std::string_view objectKey,
+    std::string_view filePath) const;
 
-    bool downloadFile(
-        std::string_view bucketName,
-        std::string_view objectKey,
-        std::string_view destinationPath
-    ) const;
+    bool downloadFile(std::string_view bucketName,
+    std::string_view objectKey,
+    std::string_view destinationPath) const;
 };
