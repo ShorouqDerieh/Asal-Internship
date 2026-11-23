@@ -17,10 +17,7 @@ BOOST_AUTO_TEST_CASE(AddClientTest)
 
     auto manager = std::make_shared<ClientManager>();
 
-    auto session = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
+    auto session = std::make_shared<ClientSession>(tcp::socket(ioContext), manager);
 
     bool added = manager->addClient("Alice", session);
 
@@ -38,21 +35,12 @@ BOOST_AUTO_TEST_CASE(DuplicateUsernameTest)
 
     auto manager = std::make_shared<ClientManager>();
 
-    auto firstSession = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
+    auto firstSession = std::make_shared<ClientSession>( tcp::socket(ioContext), manager);
 
-    auto secondSession = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
+    auto secondSession = std::make_shared<ClientSession>(tcp::socket(ioContext),manager);
 
-    bool firstAdded =
-        manager->addClient("Alice", firstSession);
-
-    bool secondAdded =
-        manager->addClient("Alice", secondSession);
+    bool firstAdded =manager->addClient("Alice", firstSession);
+    bool secondAdded =manager->addClient("Alice", secondSession);
 
     BOOST_TEST(firstAdded == true);
     BOOST_TEST(secondAdded == false);
@@ -66,10 +54,7 @@ BOOST_AUTO_TEST_CASE(RemoveClientTest)
 
     auto manager = std::make_shared<ClientManager>();
 
-    auto session = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
+    auto session = std::make_shared<ClientSession>(tcp::socket(ioContext), manager );
 
     manager->addClient("Alice", session);
 
@@ -86,22 +71,12 @@ BOOST_AUTO_TEST_CASE(RegisterAfterRemovalTest)
 
     auto manager = std::make_shared<ClientManager>();
 
-    auto firstSession = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
-
+    auto firstSession = std::make_shared<ClientSession>(tcp::socket(ioContext),manager);
     manager->addClient("Alice", firstSession);
-
     manager->removeClient("Alice", firstSession.get());
 
-    auto secondSession = std::make_shared<ClientSession>(
-        tcp::socket(ioContext),
-        manager
-    );
-
-    bool added =
-        manager->addClient("Alice", secondSession);
+    auto secondSession = std::make_shared<ClientSession>(tcp::socket(ioContext),manager);
+    bool added =manager->addClient("Alice", secondSession);
 
     BOOST_TEST(added == true);
     BOOST_TEST(manager->getUsers().size() == 1u);
