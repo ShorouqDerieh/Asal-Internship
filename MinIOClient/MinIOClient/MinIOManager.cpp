@@ -66,7 +66,6 @@ bool MinIOManager::createBucket(std::string_view bucketName) const
     Aws::S3::Model::CreateBucketRequest request;
     request.SetBucket(bucketName);
     auto outcome = client.CreateBucket(request);
-
     if (!outcome.IsSuccess())
     {
         std::cerr << std::format("CreateBucket failed: {}\n", outcome.GetError().GetMessage());
