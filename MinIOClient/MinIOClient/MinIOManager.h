@@ -12,10 +12,8 @@ private:
     Aws::S3::S3Client client;
 
 public:
-    MinIOManager(
-        const Aws::Auth::AWSCredentials& credentials,
-        const Aws::Client::ClientConfiguration& config
-    );
+    MinIOManager(const Aws::Auth::AWSCredentials& credentials,
+             const Aws::Client::ClientConfiguration& config);
 
     bool listBuckets() const;
 
